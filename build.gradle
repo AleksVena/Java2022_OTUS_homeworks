@@ -16,7 +16,7 @@ idea {
 
 
 allprojects {
-    group "kz.laseco"
+    group "kz.alseco"
 
     repositories {
         mavenLocal()
