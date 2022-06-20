@@ -3,15 +3,25 @@ package kz.alseco.handler;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import kz.alseco.listener.homework.HistoryElement;
+import kz.alseco.listener.homework.HistoryListener;
+import kz.alseco.listener.homework.MemoryStorage;
+import kz.alseco.listener.homework.Storage;
 import kz.alseco.model.Message;
 import kz.alseco.listener.Listener;
+import kz.alseco.model.ObjectForMessage;
 import kz.alseco.processor.Processor;
+import kz.alseco.processor.homework.SwapFieldsProcessor;
+import kz.alseco.processor.homework.ThrowExceptionEveryEvenSecondClock;
+import kz.alseco.processor.homework.ThrowExceptionEveryEvenSecondTimeHelper;
 
+import java.time.*;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -92,7 +102,90 @@ class ComplexProcessorTest {
         complexProcessor.handle(message);
 
         //then
-        verify(listener, times(1)).onUpdated(message);
+        verify(listener, times(1)).onUpdated(message, message);
+    }
+
+    @Test
+    @DisplayName("Меняет местами значения field11 и field12")
+    void shouldSwapFields() {
+        var message = new Message.Builder(1L)
+                .field11("field11")
+                .field12("field12")
+                .build();
+
+        var complexProcessor = new ComplexProcessor(List.of(new SwapFieldsProcessor()), ex -> {
+        });
+
+        Message afterHandle = complexProcessor.handle(message);
+        assertThat(afterHandle.getField11()).isEqualTo(message.getField12());
+        assertThat(afterHandle.getField12()).isEqualTo(message.getField11());
+    }
+
+    @Test
+    @DisplayName("Выбрасывает исключение, если секунда на момент запуска, четная (через Clock)")
+    void shouldThrowExceptionIfCurrentSecondIsEvenClock() {
+        var message = new Message.Builder(1L).build();
+
+        var oddClock = Clock.fixed(
+                Instant.parse("2022-06-20T13:17:05.000Z"),
+                ZoneId.systemDefault()
+        );
+        var complexProcessorOdd = new ComplexProcessor(List.of(new ThrowExceptionEveryEvenSecondClock(oddClock)), (ex) -> {
+            throw new TestException(ex.getMessage());
+        });
+
+        assertThatCode(() -> complexProcessorOdd.handle(message)).doesNotThrowAnyException();
+
+        var evenClock = Clock.fixed(
+                Instant.parse("2022-06-20T13:17:04.000Z"),
+                ZoneId.systemDefault()
+        );
+        var complexProcessorEven = new ComplexProcessor(List.of(new ThrowExceptionEveryEvenSecondClock(evenClock)), (ex) -> {
+            throw new TestException(ex.getMessage());
+        });
+
+        assertThatThrownBy(() -> complexProcessorEven.handle(message)).hasMessage("Current second is: 4");
+    }
+
+    @Test
+    @DisplayName("Выбрасывает исключение, если секунда на момент запуска, четная (через Helper)")
+    void shouldThrowExceptionIfCurrentSecondIsEvenHelper() {
+        var message = new Message.Builder(1L).build();
+
+        var complexProcessorOdd = new ComplexProcessor(List.of(new ThrowExceptionEveryEvenSecondTimeHelper(() -> 1)), (ex) -> {
+            throw new TestException(ex.getMessage());
+        });
+
+        assertThatCode(() -> complexProcessorOdd.handle(message)).doesNotThrowAnyException();
+
+        var complexProcessorEven = new ComplexProcessor(List.of(new ThrowExceptionEveryEvenSecondTimeHelper(() -> 2)), (ex) -> {
+            throw new TestException(ex.getMessage());
+        });
+
+        assertThatThrownBy(() -> complexProcessorEven.handle(message)).hasMessage("Current second is: 2");
+    }
+
+    @Test
+    @DisplayName("история")
+    void shouldSaveHistory() {
+        var messageNew = new Message.Builder(1L).build();
+
+        ObjectForMessage field13 = new ObjectForMessage();
+        field13.setData(List.of("1", "2", "3"));
+
+        var messageOld = new Message.Builder(1L).field13(field13).build();
+
+        Storage<HistoryElement> storage = new MemoryStorage();
+        var listener = new HistoryListener(storage);
+
+        listener.onUpdated(messageOld, messageNew);
+
+        field13.setData(List.of("1", "2", "3", "4"));
+
+        assertThat(storage.getElements()).hasSize(1);
+
+        HistoryElement first = storage.getElements().get(0);
+        assertThat(first.getOldMessage().getField13().getData()).containsOnly("1", "2", "3");
     }
 
     private static class TestException extends RuntimeException {

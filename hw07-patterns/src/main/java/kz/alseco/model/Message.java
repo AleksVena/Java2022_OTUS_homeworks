@@ -1,5 +1,7 @@
 package kz.alseco.model;
 
+import java.util.Objects;
+
 public class Message {
     private final long id;
     private final String field1;
@@ -14,9 +16,13 @@ public class Message {
     private final String field10;
     private final String field11;
     private final String field12;
-    private final String field13;
+    private final ObjectForMessage field13;
 
-    private Message(long id, String field1, String field2, String field3, String field4, String field5, String field6, String field7, String field8, String field9, String field10, String field11, String field12, String field13) {
+    //todo: 1. Добавить поля field11 - field13 (для field13 используйте класс ObjectForMessage)
+
+    private Message(long id, String field1, String field2, String field3, String field4,
+                    String field5, String field6, String field7, String field8, String field9,
+                    String field10, String field11, String field12, ObjectForMessage field13) {
         this.id = id;
         this.field1 = field1;
         this.field2 = field2;
@@ -32,6 +38,7 @@ public class Message {
         this.field12 = field12;
         this.field13 = field13;
     }
+
 
     public long getId() {
         return id;
@@ -85,8 +92,14 @@ public class Message {
         return field12;
     }
 
-    public String getField13() {
+    public ObjectForMessage getField13() {
         return field13;
+    }
+
+    public Message deepCopy() {
+        ObjectForMessage copedField13 = new ObjectForMessage();
+        copedField13.setData(this.field13.getData());
+        return this.toBuilder().field13(copedField13).build();
     }
 
     @Override
@@ -105,7 +118,8 @@ public class Message {
     }
 
     public Builder toBuilder() {
-        return new Builder(id, field1, field2, field3, field4, field5, field6, field7, field8, field9, field10, field11, field12, field13);
+        return new Builder(id, field1, field2, field3, field4, field5, field6, field7, field8, field9, field10, field11, field12,
+                Objects.requireNonNullElseGet(field13, ObjectForMessage::new));
     }
 
     @Override
@@ -122,9 +136,9 @@ public class Message {
                 ", field8='" + field8 + '\'' +
                 ", field9='" + field9 + '\'' +
                 ", field10='" + field10 + '\'' +
-                ", field10='" + field11 + '\'' +
-                ", field10='" + field12 + '\'' +
-                ", field10='" + field13 + '\'' +
+                ", field11='" + field11 + '\'' +
+                ", field12='" + field12 + '\'' +
+                ", field13='" + field13 + '\'' +
                 '}';
     }
 
@@ -142,13 +156,15 @@ public class Message {
         private String field10;
         private String field11;
         private String field12;
-        private String field13;
+        private ObjectForMessage field13;
 
         public Builder(long id) {
             this.id = id;
         }
 
-        private Builder(long id, String field1, String field2, String field3, String field4, String field5, String field6, String field7, String field8, String field9, String field10, String field11, String field12, String field13) {
+        private Builder(long id, String field1, String field2, String field3,
+                        String field4, String field5, String field6, String field7,
+                        String field8, String field9, String field10, String field11, String field12, ObjectForMessage field13) {
             this.id = id;
             this.field1 = field1;
             this.field2 = field2;
@@ -225,13 +241,13 @@ public class Message {
             return this;
         }
 
-        public Builder field13(String field13) {
+        public Builder field13(ObjectForMessage field13) {
             this.field13 = field13;
             return this;
         }
 
         public Message build() {
-            return new Message(id, field1, field2, field3, field4, field5, field6, field7, field8, field9, field10,  field11, field12, field13);
+            return new Message(id, field1, field2, field3, field4, field5, field6, field7, field8, field9, field10, field11, field12, Objects.requireNonNullElseGet(field13, ObjectForMessage::new));
         }
     }
 }

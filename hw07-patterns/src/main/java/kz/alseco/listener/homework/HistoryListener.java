@@ -2,17 +2,17 @@ package kz.alseco.listener.homework;
 
 import kz.alseco.listener.Listener;
 import kz.alseco.model.Message;
-import java.util.Optional;
 
-public class HistoryListener implements Listener, HistoryReader {
+public class HistoryListener implements Listener {
 
-    @Override
-    public void onUpdated(Message msg) {
-        throw new UnsupportedOperationException();
+    private final Storage<?> storage;
+
+    public HistoryListener(Storage<?> storage) {
+        this.storage = storage;
     }
 
     @Override
-    public Optional<Message> findMessageById(long id) {
-        throw new UnsupportedOperationException();
+    public void onUpdated(Message oldMess, Message newMess) {
+        storage.save(oldMess.deepCopy(), newMess.deepCopy());
     }
 }

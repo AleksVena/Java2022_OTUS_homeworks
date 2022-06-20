@@ -21,16 +21,16 @@ public class ComplexProcessor implements Handler {
 
     @Override
     public Message handle(Message msg) {
-        Message newMsg = msg;
+        Message newMess = msg;
         for (Processor pros : processors) {
             try {
-                newMsg = pros.process(newMsg);
+                newMess = pros.process(newMess);
             } catch (Exception ex) {
                 errorHandler.accept(ex);
             }
         }
-        notify(newMsg);
-        return newMsg;
+        notify(msg, newMess);
+        return newMess;
     }
 
     @Override
@@ -43,10 +43,10 @@ public class ComplexProcessor implements Handler {
         listeners.remove(listener);
     }
 
-    private void notify(Message msg) {
+    private void notify(Message oldMess, Message newMess) {
         listeners.forEach(listener -> {
             try {
-                listener.onUpdated(msg);
+                listener.onUpdated(oldMess, newMess);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
