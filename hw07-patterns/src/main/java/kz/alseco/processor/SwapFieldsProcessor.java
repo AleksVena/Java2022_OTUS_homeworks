@@ -2,7 +2,7 @@ package kz.alseco.processor;
 
 import kz.alseco.model.Message;
 
-public class ProcessorChangeFields implements Processor
+public class SwapFieldsProcessor implements Processor
 {
     @Override
     public Message process(Message message)

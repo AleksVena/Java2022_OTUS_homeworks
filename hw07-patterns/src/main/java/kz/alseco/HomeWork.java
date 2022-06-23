@@ -4,10 +4,9 @@ import kz.alseco.handler.ComplexProcessor;
 import kz.alseco.listener.homework.HistoryListener;
 import kz.alseco.model.Message;
 import kz.alseco.model.ObjectForMessage;
-import kz.alseco.processor.ProcessorChangeFields;
+import kz.alseco.processor.SwapFieldsProcessor;
 import kz.alseco.processor.ProcessorExceptionOnEvenSecond;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class HomeWork {
@@ -26,20 +25,31 @@ public class HomeWork {
      */
 
     public static void main(String[] args) {
-        var processors = List.of(new ProcessorChangeFields(),
-                new ProcessorExceptionOnEvenSecond(LocalDateTime::now));
+        var processors = List.of(new ProcessorExceptionOnEvenSecond(),
+                new SwapFieldsProcessor());
 
-        var complexProcessor = new ComplexProcessor(processors, ex -> {});
+        var complexProcessor = new ComplexProcessor(processors, Throwable::printStackTrace);
         var listenerPrinter = new HistoryListener();
         complexProcessor.addListener(listenerPrinter);
 
+        ObjectForMessage field13 = new ObjectForMessage();
+        field13.setData(List.of("1", "2", "3"));
+
         var message = new Message.Builder(1L)
-                .field11("field1")
-                .field12("field2")
-                .field13(new ObjectForMessage())
+                .field1("field1")
+                .field2("field2")
+                .field3("field3")
+                .field6("field6")
+                .field10("field10")
+                .field11("field11")
+                .field12("field12")
+                .field13(field13)
                 .build();
 
         var result = complexProcessor.handle(message);
+
+        field13.setData(List.of("1", "2", "3", "4"));
+
         System.out.println("result:" + result);
 
         complexProcessor.removeListener(listenerPrinter);
