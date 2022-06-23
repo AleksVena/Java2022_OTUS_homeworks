@@ -3,10 +3,7 @@ package kz.alseco.handler;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import kz.alseco.listener.homework.HistoryElement;
 import kz.alseco.listener.homework.HistoryListener;
-import kz.alseco.listener.homework.MemoryStorage;
-import kz.alseco.listener.homework.Storage;
 import kz.alseco.model.Message;
 import kz.alseco.listener.Listener;
 import kz.alseco.model.ObjectForMessage;
@@ -17,8 +14,6 @@ import kz.alseco.processor.homework.ThrowExceptionEveryEvenSecondTimeHelper;
 
 import java.time.*;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;

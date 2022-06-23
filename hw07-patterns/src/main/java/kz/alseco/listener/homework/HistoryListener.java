@@ -3,16 +3,23 @@ package kz.alseco.listener.homework;
 import kz.alseco.listener.Listener;
 import kz.alseco.model.Message;
 
-public class HistoryListener implements Listener {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
-    private final Storage<?> storage;
+public class HistoryListener implements Listener, HistoryReader {
 
-    public HistoryListener(Storage<?> storage) {
-        this.storage = storage;
+    Map<Long, Message> messageMap = new HashMap<>();
+
+    @Override
+    public void onUpdated(Message msg)
+    {
+        messageMap.put(msg.getId(), Message.copyMessage(msg));
     }
 
     @Override
-    public void onUpdated(Message oldMess, Message newMess) {
-        storage.save(oldMess.deepCopy(), newMess.deepCopy());
+    public Optional<Message> findMessageById(long id)
+    {
+        return Optional.ofNullable(messageMap.get(id));
     }
 }

@@ -1,12 +1,12 @@
-package kz.alseco.processor.homework;
+package kz.alseco.processor;
 
 import kz.alseco.model.Message;
-import kz.alseco.processor.Processor;
 
-public class SwapFieldsProcessor implements Processor {
-
+public class ProcessorChangeFields implements Processor
+{
     @Override
-    public Message process(Message message) {
+    public Message process(Message message)
+    {
         var currentField11 = message.getField11();
         var currentField12 = message.getField12();
 

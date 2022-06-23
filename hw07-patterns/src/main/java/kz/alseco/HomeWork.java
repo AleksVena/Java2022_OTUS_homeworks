@@ -2,12 +2,12 @@ package kz.alseco;
 
 import kz.alseco.handler.ComplexProcessor;
 import kz.alseco.listener.homework.HistoryListener;
-import kz.alseco.listener.homework.MemoryStorage;
 import kz.alseco.model.Message;
 import kz.alseco.model.ObjectForMessage;
-import kz.alseco.processor.homework.SwapFieldsProcessor;
-import kz.alseco.processor.homework.ThrowExceptionEveryEvenSecondClock;
+import kz.alseco.processor.ProcessorChangeFields;
+import kz.alseco.processor.ProcessorExceptionOnEvenSecond;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class HomeWork {
@@ -26,35 +26,22 @@ public class HomeWork {
      */
 
     public static void main(String[] args) {
-        var processors = List.of(new ThrowExceptionEveryEvenSecondClock(),
-                new SwapFieldsProcessor());
+        var processors = List.of(new ProcessorChangeFields(),
+                new ProcessorExceptionOnEvenSecond(LocalDateTime::now));
 
-        var complexProcessor = new ComplexProcessor(processors, Throwable::printStackTrace);
-        var storage = new MemoryStorage();
-        var historyListener = new HistoryListener(storage);
-        complexProcessor.addListener(historyListener);
-
-        ObjectForMessage field13 = new ObjectForMessage();
-        field13.setData(List.of("1", "2", "3"));
+        var complexProcessor = new ComplexProcessor(processors, ex -> {});
+        var listenerPrinter = new HistoryListener();
+        complexProcessor.addListener(listenerPrinter);
 
         var message = new Message.Builder(1L)
-                .field1("field1")
-                .field2("field2")
-                .field3("field3")
-                .field6("field6")
-                .field10("field10")
-                .field11("field11")
-                .field12("field12")
-                .field13(field13)
+                .field11("field1")
+                .field12("field2")
+                .field13(new ObjectForMessage())
                 .build();
 
         var result = complexProcessor.handle(message);
-
-        field13.setData(List.of("1", "2", "3", "4"));
-
         System.out.println("result:" + result);
-        System.out.println("History: " + storage.getElements());
 
-        complexProcessor.removeListener(historyListener);
+        complexProcessor.removeListener(listenerPrinter);
     }
 }

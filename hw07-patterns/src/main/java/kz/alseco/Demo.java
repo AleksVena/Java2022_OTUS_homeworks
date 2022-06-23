@@ -1,7 +1,7 @@
 package kz.alseco;
 
 import kz.alseco.handler.ComplexProcessor;
-import kz.alseco.listener.ListenerPrinter;
+import kz.alseco.listener.ListenerPrinterConsole;
 import kz.alseco.model.Message;
 import kz.alseco.processor.LoggerProcessor;
 import kz.alseco.processor.ProcessorConcatFields;
@@ -14,8 +14,8 @@ public class Demo {
         var processors = List.of(new ProcessorConcatFields(),
                 new LoggerProcessor(new ProcessorUpperField10()));
 
-        var complexProcessor = new ComplexProcessor(processors, (ex) -> {});
-        var listenerPrinter = new ListenerPrinter();
+        var complexProcessor = new ComplexProcessor(processors, ex -> {});
+        var listenerPrinter = new ListenerPrinterConsole();
         complexProcessor.addListener(listenerPrinter);
 
         var message = new Message.Builder(1L)
