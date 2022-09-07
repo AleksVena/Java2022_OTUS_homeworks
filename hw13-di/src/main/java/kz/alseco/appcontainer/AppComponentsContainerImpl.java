@@ -4,7 +4,9 @@ import kz.alseco.appcontainer.api.AppComponent;
 import kz.alseco.appcontainer.api.AppComponentsContainer;
 import kz.alseco.appcontainer.api.AppComponentsContainerConfig;
 
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
@@ -28,6 +30,14 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
                 .sorted(comparing(m -> m.getAnnotation(AppComponent.class).order()))
                 .toList();
 
+        var beanMethodsGroupByName = stream(beanMethods.toArray()).collect(
+                Collectors.groupingBy(method -> {
+                    return getName((Method)method);
+                }));
+
+        if (beanMethodsGroupByName.size() != beanMethods.size())
+            throw new RuntimeException("Double names found");
+
         try {
             for (var method : beanMethods) {
                 Object[] args = stream(method.getParameterTypes()).map(this::getAppComponent).toArray();
@@ -35,7 +45,7 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
                 Object configClassInstance = configClass.getDeclaredConstructor().newInstance();
                 Object bean = method.invoke(configClassInstance, args);
 
-                String beanName = method.getAnnotation(AppComponent.class).name();
+                String beanName = getName(method);
 
                 appComponentsByName.put(beanName, bean);
                 appComponents.add(bean);
@@ -43,6 +53,10 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String getName(Method method) {
+        return method.getAnnotation(AppComponent.class).name();
     }
 
     private void checkConfigClass(Class<?> configClass) {
