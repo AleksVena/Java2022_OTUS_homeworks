@@ -30,13 +30,12 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
                 .sorted(comparing(m -> m.getAnnotation(AppComponent.class).order()))
                 .toList();
 
-        var beanMethodsGroupByName = stream(beanMethods.toArray()).collect(
-                Collectors.groupingBy(method -> {
-                    return getName((Method)method);
-                }));
+        var beanMethodsGroupByName = beanMethods.stream().collect(
+                Collectors.groupingBy(method -> getName(method)));
 
-        if (beanMethodsGroupByName.size() != beanMethods.size())
+        if (beanMethodsGroupByName.size() != beanMethods.size()) {
             throw new RuntimeException("Double names found");
+        }
 
         try {
             for (var method : beanMethods) {
